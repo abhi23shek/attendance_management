@@ -11,14 +11,24 @@ export default function AddEmployee() {
     salary: "",
   });
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Here you would send data to your backend
+    try {
+      const response = await fetch('/api/add-employee', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(form)
+      });
+      if (response.ok) {
     setSuccess(true);
     setForm({
       name: "",
@@ -26,17 +36,20 @@ export default function AddEmployee() {
       address: "",
       aadhar: "",
       doj: "",
-      salary: "",
+          salary: ""
     });
-    setTimeout(() => setSuccess(false), 2000);
+      } else {
+        setError('Failed to add employee');
+      }
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          Add New Employee
-        </h2>
+        <h2 className="text-3xl font-bold mb-6 text-center">Add Employees</h2>
         <form
           className="flex flex-col gap-4"
           onSubmit={handleSubmit}
@@ -55,7 +68,7 @@ export default function AddEmployee() {
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Enter employee name"
               value={form.name}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "name")}
               required
             />
           </div>
@@ -73,7 +86,7 @@ export default function AddEmployee() {
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Enter phone number"
               value={form.phone}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "phone")}
               required
             />
           </div>
@@ -91,7 +104,7 @@ export default function AddEmployee() {
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Enter address"
               value={form.address}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "address")}
               required
             />
           </div>
@@ -109,7 +122,7 @@ export default function AddEmployee() {
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Enter Aadhar number"
               value={form.aadhar}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "aadhar")}
               required
               maxLength={12}
               pattern="\d{12}"
@@ -128,7 +141,7 @@ export default function AddEmployee() {
               type="date"
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={form.doj}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "doj")}
               required
             />
           </div>
@@ -147,7 +160,7 @@ export default function AddEmployee() {
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Enter salary"
               value={form.salary}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "salary")}
               required
             />
           </div>
@@ -163,7 +176,13 @@ export default function AddEmployee() {
             Employee added successfully!
           </div>
         )}
+        {(error || null) && (
+          <div className="mt-4 text-red-500 text-center font-medium">
+            Error: {error}
+      </div>
+        )}
       </div>
     </main>
   );
 }
+
