@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function AddEmployee() {
   const [form, setForm] = useState({
@@ -10,179 +10,186 @@ export default function AddEmployee() {
     doj: "",
     salary: "",
   });
+
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const [employees, setEmployees] = useState([]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // Here you would send data to your backend
+  const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/add-employee', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(form)
-      });
-      if (response.ok) {
-    setSuccess(true);
-    setForm({
-      name: "",
-      phone: "",
-      address: "",
-      aadhar: "",
-      doj: "",
-          salary: ""
-    });
-      } else {
-        setError('Failed to add employee');
-      }
-    } catch (error) {
-      setError(error.message);
+      const res = await fetch("http://localhost:3000/api/employee");
+      const data = await res.json();
+      setEmployees(data);
+    } catch (err) {
+      console.error("Failed to fetch employees", err);
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:3000/api/employee", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.name,
+          phone_number: form.phone,
+          address: form.address,
+          date_of_joining: form.doj,
+          salary: form.salary,
+        }),
+      });
+
+      if (response.ok) {
+        setSuccess(true);
+        setForm({
+          name: "",
+          phone: "",
+          address: "",
+          aadhar: "",
+          doj: "",
+          salary: "",
+        });
+        fetchEmployees();
+      } else {
+        const resBody = await response.json();
+        setError(resBody?.error || "Failed to add employee");
+      }
+    } catch (err) {
+      setError(err.message || "Unexpected error");
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-6 text-center">Add Employees</h2>
-        <form
-          className="flex flex-col gap-4"
-          onSubmit={handleSubmit}
-        >
-          <div>
-            <label
-              className="block text-sm font-medium mb-1"
-              htmlFor="name"
-            >
-              Name
-            </label>
+    <main className="p-10 min-h-screen bg-gray-50">
+      {/* Add Employee Form */}
+      <div className="bg-white p-6 rounded-lg shadow-md mb-10">
+        <h2 className="text-2xl font-bold mb-4 text-center">Add New Employee</h2>
+        <form className="flex flex-wrap gap-4 items-end justify-center" onSubmit={handleSubmit}>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium mb-1">Name</label>
             <input
-              id="name"
               name="name"
               type="text"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter employee name"
               value={form.name}
-              onChange={(e) => handleChange(e, "name")}
+              onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2"
               required
             />
           </div>
-          <div>
-            <label
-              className="block text-sm font-medium mb-1"
-              htmlFor="phone"
-            >
-              Phone
-            </label>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium mb-1">Phone</label>
             <input
-              id="phone"
               name="phone"
               type="tel"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter phone number"
               value={form.phone}
-              onChange={(e) => handleChange(e, "phone")}
+              onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2"
               required
             />
           </div>
-          <div>
-            <label
-              className="block text-sm font-medium mb-1"
-              htmlFor="address"
-            >
-              Address
-            </label>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium mb-1">Address</label>
             <input
-              id="address"
               name="address"
               type="text"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter address"
               value={form.address}
-              onChange={(e) => handleChange(e, "address")}
+              onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2"
               required
             />
           </div>
-          <div>
-            <label
-              className="block text-sm font-medium mb-1"
-              htmlFor="aadhar"
-            >
-              Aadhar Number
-            </label>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium mb-1">Aadhar</label>
             <input
-              id="aadhar"
               name="aadhar"
               type="text"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter Aadhar number"
               value={form.aadhar}
-              onChange={(e) => handleChange(e, "aadhar")}
-              required
+              onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2"
               maxLength={12}
               pattern="\d{12}"
             />
           </div>
-          <div>
-            <label
-              className="block text-sm font-medium mb-1"
-              htmlFor="doj"
-            >
-              Date of Joining
-            </label>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium mb-1">DOJ</label>
             <input
-              id="doj"
               name="doj"
               type="date"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={form.doj}
-              onChange={(e) => handleChange(e, "doj")}
+              onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2"
               required
             />
           </div>
-          <div>
-            <label
-              className="block text-sm font-medium mb-1"
-              htmlFor="salary"
-            >
-              Salary
-            </label>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium mb-1">Salary</label>
             <input
-              id="salary"
               name="salary"
               type="number"
-              min="0"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter salary"
               value={form.salary}
-              onChange={(e) => handleChange(e, "salary")}
+              onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2"
               required
             />
           </div>
           <button
             type="submit"
-            className="bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white font-semibold px-6 py-2 rounded hover:bg-blue-700"
           >
-            Add Employee
+            Add
           </button>
         </form>
         {success && (
-          <div className="mt-4 text-green-600 text-center font-medium">
+          <p className="mt-4 text-green-600 text-center font-medium">
             Employee added successfully!
-          </div>
+          </p>
         )}
-        {(error || null) && (
-          <div className="mt-4 text-red-500 text-center font-medium">
+        {error && (
+          <p className="mt-4 text-red-500 text-center font-medium">
             Error: {error}
+          </p>
+        )}
       </div>
+
+      {/* Employee List */}
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h3 className="text-xl font-bold mb-4">Employee List</h3>
+        {employees.length === 0 ? (
+          <p className="text-gray-500">No employees found.</p>
+        ) : (
+          <table className="w-full border border-gray-300 text-left">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="py-2 px-4 border-b">ID</th>
+                <th className="py-2 px-4 border-b">Name</th>
+                <th className="py-2 px-4 border-b">Phone</th>
+                <th className="py-2 px-4 border-b">Address</th>
+              </tr>
+            </thead>
+            <tbody>
+              {employees.map((emp) => (
+                <tr key={emp.id} className="hover:bg-gray-50">
+                  <td className="py-2 px-4 border-b">{emp.id}</td>
+                  <td className="py-2 px-4 border-b">{emp.name}</td>
+                  <td className="py-2 px-4 border-b">{emp.phone_number}</td>
+                  <td className="py-2 px-4 border-b">{emp.address}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </main>
   );
 }
-
