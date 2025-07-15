@@ -1,33 +1,29 @@
 import { neon } from "@neondatabase/serverless";
 const sql = neon(process.env.DATABASE_URL);
 
-// GET all employees
+
+//GET employee
 export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
   try {
-    const result = await sql`SELECT * FROM employee`;
-    return Response.json(result);
+    if (id) {
+      const result = await sql`SELECT * FROM employee WHERE id = ${id}`;
+      if (result.length === 0) {
+        return Response.json({ error: "Employee not found" }, { status: 404 });
+      }
+      return Response.json(result[0]);
+    } else {
+      const result = await sql`SELECT * FROM employee`;
+      return Response.json(result);
+    }
   } catch (error) {
     console.error("Error fetching data:", error);
     return Response.json({ error: "Failed to fetch data" }, { status: 500 });
   }
 }
 
-// GET single employee by ID
-export async function GET_BY_ID(request) {
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
-
-  try {
-    const result = await sql`SELECT * FROM employee WHERE id = ${id}`;
-    if (result.length === 0) {
-      return Response.json({ error: "Employee not found" }, { status: 404 });
-    }
-    return Response.json(result[0]);
-  } catch (error) {
-    console.error("Error fetching employee:", error);
-    return Response.json({ error: "Failed to fetch employee" }, { status: 500 });
-  }
-}
 
 //POST employee
 export async function POST(request) {
